@@ -36,14 +36,6 @@ public class Coordinate {
         return degrees * radiansInDegree;
     }
 
-    /**
-     * Gets pi number
-     * @return Pi number
-     */
-    public static double pi() {
-        return Math.PI;
-    }
-
     public double getDegrees() {
         return degrees;
     }
