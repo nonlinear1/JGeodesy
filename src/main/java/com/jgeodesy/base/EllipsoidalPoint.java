@@ -59,6 +59,8 @@ public class EllipsoidalPoint extends Point {
         double x = vector3D.getX();
         double y = vector3D.getY();
         double z = vector3D.getZ();
+
+        // TODO Check datum type then what?
 //        if (pointDatum.getEllipsoid() == Ellipsoid.WGS84) {
 //        }
 //            Ellipsoid currentEllipsoid = Ellipsoid.getEllipsoid(pointDatum.getEllipsoid().getName());
