@@ -16,6 +16,7 @@ public class Coordinate {
      * @param degrees degrees
      */
     public Coordinate(double degrees) {
+        this.degrees = degrees;
     }
 
     /**
