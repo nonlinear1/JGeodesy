@@ -1,6 +1,9 @@
 package com.jgeodesy.shape;
 
 import com.jgeodesy.base.Transform;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,5 +83,37 @@ public class Datum {
 
     public void setTransform(Transform transform) {
         this.transform = transform;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        Datum datum = (Datum) o;
+
+        return new EqualsBuilder()
+                .append(ellipsoid, datum.ellipsoid)
+                .append(transform, datum.transform)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(ellipsoid)
+                .append(transform)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("ellipsoid", ellipsoid)
+                .append("transform", transform)
+                .toString();
     }
 }
