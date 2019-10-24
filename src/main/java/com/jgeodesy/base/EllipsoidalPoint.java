@@ -3,6 +3,7 @@ package com.jgeodesy.base;
 import com.jgeodesy.coordinate.Coordinate;
 import com.jgeodesy.coordinate.Latitude;
 import com.jgeodesy.coordinate.Longitude;
+import com.jgeodesy.shape.Datum;
 import com.jgeodesy.shape.Ellipsoid;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -16,13 +17,15 @@ public class EllipsoidalPoint extends Point {
     private double height;
     private Datum datum;
 
+    private static final String WGS84 = "WGS84";
+
     /**
      * Default datum initialize
      */
     public EllipsoidalPoint() {
         super();
         this.height = 0.0;
-        this.datum = Datum.getDatum("WGS84");
+        this.datum = Datum.getDatum(WGS84);
     }
 
     /**
@@ -76,10 +79,10 @@ public class EllipsoidalPoint extends Point {
         double e2 = 2.0 * f - f * f; // 1st eccentricity squared (a²−b²)/a²
         double epsilon2 = e2 / (1.0 - e2); // 2nd eccentricity squared ≡ (a²−b²)/b²
         double p = Math.sqrt(x * x + y * y); // distance from minor axis
-        double R = Math.sqrt(p * p + z * z); // polar radius
+        double r = Math.sqrt(p * p + z * z); // polar radius
 
         // parametric latitude (Bowring eqn 17, replacing tanBeta = z�a / p�b)
-        double tanBeta = (b * z) / (a * p) * (1.0 + epsilon2 * b / R);
+        double tanBeta = (b * z) / (a * p) * (1.0 + epsilon2 * b / r);
         double sinBeta = tanBeta / Math.sqrt(1 + tanBeta * tanBeta);
         double cosBeta = sinBeta / tanBeta;
 
@@ -123,6 +126,35 @@ public class EllipsoidalPoint extends Point {
         double y = (nu + h) * cosPhi * sinLambda;
         double z = (nu * (1.0 - eSq) + h) * sinPhi;
         return new Vector3D(x, y, z);
+    }
+
+    /**
+     * Converts ‘this’ cartesian coordinate to new datum using Helmert 7-parameter transformation.
+     * @param toDatum Datum this coordinate is to be converted to.
+     * @return EllipsoidalPoint This point converted to new datum.
+     */
+    public EllipsoidalPoint convertToDatum(Datum toDatum) {
+        Datum currentDatum = datum;
+
+        if (currentDatum == toDatum)
+            return this;
+
+        Transform transform;
+        if (currentDatum == Datum.getDatums().get(WGS84)) {
+            // Converting from WGS 84
+            transform = toDatum.getTransform();
+        } else if (toDatum == Datum.getDatums().get(WGS84)) {
+            // Converting to WGS 84; use inverse transform (don't overwrite original!)
+            transform = currentDatum.getTransform();
+        } else{
+            // Neither this datum nor toDatum are WGS84: convert this to WGS84 first
+            this.convertToDatum(Datum.getDatums().get(WGS84));
+            transform = toDatum.getTransform();
+        }
+
+        Vector3D oldCartesian = this.convertToCartesianPoint(); // Convert polar to Cartesian
+        Transform.applyTransform(oldCartesian, transform);
+        return this.convertToPoint(oldCartesian, toDatum); // ...and convert Cartesian to polar
     }
 
     @Override
