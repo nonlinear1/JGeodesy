@@ -17,6 +17,7 @@ public class Coordinate {
      */
     public Coordinate(double degrees) {
         this.degrees = degrees;
+        this.radians = toRadians(this.degrees);
     }
 
     /**
