@@ -4,6 +4,9 @@ import com.jgeodesy.coordinate.Coordinate;
 import com.jgeodesy.coordinate.Latitude;
 import com.jgeodesy.coordinate.Longitude;
 import com.jgeodesy.shape.Ellipsoid;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Created by omeruluoglu on 23.10.2019.
@@ -120,5 +123,39 @@ public class EllipsoidalPoint extends Point {
         double y = (nu + h) * cosPhi * sinLambda;
         double z = (nu * (1.0 - eSq) + h) * sinPhi;
         return new Vector3D(x, y, z);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        EllipsoidalPoint that = (EllipsoidalPoint) o;
+
+        return new EqualsBuilder()
+                .appendSuper(super.equals(o))
+                .append(height, that.height)
+                .append(datum, that.datum)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .appendSuper(super.hashCode())
+                .append(height)
+                .append(datum)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("height", height)
+                .append("datum", datum)
+                .toString();
     }
 }
