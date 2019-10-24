@@ -5,13 +5,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by omeruluoglu on 23.10.2019.
  */
 public class Transform {
 
-    private static HashMap<String, Transform> transforms = new HashMap<>();
+    private static Map<String, Transform> transforms = new HashMap<>();
 
     static {
         transforms.put("BD72", new Transform("BD72", 106.868628, -52.297783, 103.723893, -0.33657, -0.456955, -1.84218, 1.2727));
@@ -84,6 +85,7 @@ public class Transform {
 
     /**
      * Helmert transformation
+     * @param name unique name
      */
     public Transform(String name) {
         this.name = name;
@@ -125,6 +127,10 @@ public class Transform {
         this.ry = Math.toRadians(sy / 3600.0);
         this.rz = Math.toRadians(sz / 3600.0);
         this.s1 = s * 1.e-6 + 1;
+    }
+
+    public static Map<String, Transform> getTransforms() {
+        return transforms;
     }
 
     /**
