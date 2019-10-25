@@ -33,7 +33,7 @@ public class SphericalPoint extends Point {
      * @param radius Radius of earth (defaults to mean radius in metres)
      * @return Distance between this point and destination point, in same units as radius
      */
-    public Double distanceTo(final SphericalPoint2 sphericalPoint, double radius) {
+    public Double distanceTo(final SphericalPoint sphericalPoint, double radius) {
         // see mathforum.org/library/drmath/view/51879.html for derivation
         double phi1 = getLatitude().getRadians();
         double lambda1 = getLongitude().getRadians();
@@ -52,7 +52,7 @@ public class SphericalPoint extends Point {
      * @param sphericalPoint Latitude/longitude of destination point
      * @return Initial bearing in degrees from north (0°..360°)
      */
-    public Double initialBearingTo(final SphericalPoint2 sphericalPoint) {
+    public Double initialBearingTo(final SphericalPoint sphericalPoint) {
         // see mathforum.org/library/drmath/view/55417.html for derivation
         double phi1 = getLatitude().getRadians();
         double phi2 = sphericalPoint.getLatitude().getRadians();
