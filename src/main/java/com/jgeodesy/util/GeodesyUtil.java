@@ -232,6 +232,16 @@ public class GeodesyUtil {
         return feet * 0.3048;
     }
 
+    /**
+     * Float mod operation
+     * @param f1 float number
+     * @param f2 float number
+     * @return mod result
+     */
+    public static Double floatMod(final double f1, final double f2) {
+        return f1 % f2;
+    }
+
     private static Double angleWrap(final double degrees, final double range, final double upperLimit) {
         if (range > degrees && degrees >= (degrees - upperLimit))
             return degrees;
