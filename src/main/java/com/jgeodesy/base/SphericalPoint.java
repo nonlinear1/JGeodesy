@@ -264,4 +264,41 @@ public class SphericalPoint extends Point {
         double xt = Math.asin(Math.sin(d13) * Math.sin(theta13 - theta12));
         return xt * radius;
     }
+
+    /**
+     * Returns how far ‘this’ point is along a path from from start-point, heading towards end-point
+     * That is, if a perpendicular is drawn from ‘this’ point to the (great circle) path,
+     * the along-track distance is the distance from the start point to where the perpendicular crosses the path
+     * @param pathStart Start point of great circle path
+     * @param pathEnd End point of great circle path
+     * @param radius (Mean) radius of earth (defaults to radius in metres)
+     * @return Distance along great circle to point nearest ‘this’ point
+     */
+    public double alongTrackDistanceTo(final SphericalPoint pathStart, final SphericalPoint pathEnd, final double radius) {
+        double d13 = pathStart.distanceTo(this, radius) / radius;
+        double theta13 = Coordinate.toRadians(pathStart.initialBearingTo(this));
+        double theta12 = Coordinate.toRadians(pathStart.initialBearingTo(pathEnd));
+
+        double xt = Math.asin(Math.sin(d13) * Math.sin(theta13 - theta12));
+        double at = Math.acos(Math.cos(d13) / Math.abs(Math.cos(xt)));
+        double cosTheta = Math.cos(theta12 - theta13);
+        if (cosTheta == 0.0)
+            return 0.0;
+        double dist = at * radius;
+        return cosTheta > 0 ? dist : -dist;
+    }
+
+    /**
+     * Returns maximum latitude reached when travelling on a great circle on given bearing from
+     * ‘this’ point (‘Clairaut’s formula’). Negate the result for the minimum latitude (in the southern hemisphere)
+     * The maximum latitude is independent of longitude; it will be the same for all points on a given latitude
+     * @param bearing Initial bearing
+     * @return Maximum latitude reached
+     */
+    public double maxLatitude(double bearing) {
+        double theta = Coordinate.toRadians(bearing);
+        double phi = getLatitude().getRadians();
+        double phiMax = Math.acos(Math.abs(Math.sin(theta) * Math.cos(phi)));
+        return Coordinate.toDegrees(phiMax);
+    }
 }
