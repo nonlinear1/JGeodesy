@@ -61,5 +61,15 @@ public class JGeodesyApplication {
         // -307.5 m
         double crossTrackDistance = sphericalPoint5.crossTrackDistanceTo(sphericalPoint6, sphericalPoint7, GeodesyUtil.getRadiusOfWorld());
         System.out.println(crossTrackDistance);
+
+        // 62.331 km
+        double trackDistance = sphericalPoint5.alongTrackDistanceTo(sphericalPoint6, sphericalPoint7, GeodesyUtil.getRadiusOfWorld());
+        double kiloMeterDistance = GeodesyUtil.convertMeterToKiloMeter(trackDistance);
+        System.out.println(kiloMeterDistance);
+
+        // 89
+        SphericalPoint sphericalPoint8 = new SphericalPoint(new Latitude(0.0), new Longitude(0.0));
+        double maxLatitude = sphericalPoint8.maxLatitude(1);
+        System.out.println(maxLatitude);
     }
 }
