@@ -71,5 +71,16 @@ public class JGeodesyApplication {
         SphericalPoint sphericalPoint8 = new SphericalPoint(new Latitude(0.0), new Longitude(0.0));
         double maxLatitude = sphericalPoint8.maxLatitude(1);
         System.out.println(maxLatitude);
+
+        //  40.31 km
+        SphericalPoint sphericalPoint9 = new SphericalPoint(new Latitude(51.127),new Longitude(1.338));
+        SphericalPoint sphericalPoint10 = new SphericalPoint(new Latitude(50.964),new Longitude(1.853));
+        double rhumbDistance = sphericalPoint9.rhumbDistanceTo(sphericalPoint10, GeodesyUtil.getRadiusOfWorld());
+        double kiloMeterRhumbDistance = GeodesyUtil.convertMeterToKiloMeter(rhumbDistance);
+        System.out.println(kiloMeterRhumbDistance);
+
+        // 116.7°
+        double bearing = sphericalPoint9.rhumbBearingTo(sphericalPoint10);
+        System.out.println(bearing);
     }
 }
