@@ -301,4 +301,52 @@ public class SphericalPoint extends Point {
         double phiMax = Math.acos(Math.abs(Math.sin(theta) * Math.cos(phi)));
         return Coordinate.toDegrees(phiMax);
     }
+
+    /**
+     * Returns the distance travelling from ‘this’ point to destination point along a rhumb line.
+     * @param destinationPoint Latitude/longitude of destination point
+     * @param radius (Mean) radius of earth (defaults to radius in metres)
+     * @return Distance in km between this point and destination point (same units as radius)
+     */
+    public double rhumbDistanceTo(final SphericalPoint destinationPoint, final double radius) {
+        // see www.edwilliams.org/avform.htm#Rhumb
+        double phi1 = this.getLatitude().getRadians();
+        double phi2 = destinationPoint.getLatitude().getRadians();
+        double deltaPhi = phi2 - phi1;
+        double deltaLambda = Math.abs(destinationPoint.getLongitude().getRadians() - this.getLongitude().getRadians());
+
+        // If dLon over 180� take shorter rhumb line across the anti-meridian:
+        if (deltaLambda > Math.PI)
+            deltaLambda -= 2.0 * Math.PI;
+
+        // On Mercator projection, longitude distances shrink by latitude; q is the 'stretch factor'
+        // q becomes ill-conditioned along E-W line (0/0); use empirical tolerance to avoid it
+        double deltaPsi = Math.log(Math.tan(phi2 / 2.0 + Math.PI / 4.0) / Math.tan(phi1 / 2.0 + Math.PI / 4.0));
+        double q = Math.abs(deltaPsi) > 10e-12 ? deltaPhi / deltaPsi : Math.cos(phi1);
+
+        // Distance is Pythagoras on 'stretched' Mercator projection
+        double sigma = Math.sqrt(deltaPhi * deltaPhi + q * q * deltaLambda * deltaLambda); // angular distance in radians
+        return sigma * radius;
+    }
+
+    /**
+     * Returns the bearing from ‘this’ point to destination point along a rhumb line
+     * @param destinationPoint Returns the bearing from ‘this’ point to destination point along a rhumb line
+     * @return Bearing in degrees from north
+     */
+    public double rhumbBearingTo(SphericalPoint destinationPoint) {
+        double phi1 = this.getLatitude().getRadians();
+        double phi2 = destinationPoint.getLatitude().getRadians();
+        double deltaLambda = destinationPoint.getLongitude().getRadians() - this.getLongitude().getRadians();
+        // If dLon over 180� take shorter rhumb line across the anti-meridian:
+        if (deltaLambda > Math.PI)
+            deltaLambda -= 2.0 * Math.PI;
+
+        if (deltaLambda < -Math.PI)
+            deltaLambda += 2.0 * Math.PI;
+
+        double deltaPsi = Math.log(Math.tan(phi2 / 2.0 + Math.PI / 4.0) / Math.tan(phi1 / 2.0 + Math.PI / 4.0));
+        double theta = Math.atan2(deltaLambda, deltaPsi);
+        return GeodesyUtil.wrapTo360(Coordinate.toDegrees(theta));
+    }
 }
