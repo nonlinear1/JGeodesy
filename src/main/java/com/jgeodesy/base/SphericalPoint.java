@@ -349,4 +349,65 @@ public class SphericalPoint extends Point {
         double theta = Math.atan2(deltaLambda, deltaPsi);
         return GeodesyUtil.wrapTo360(Coordinate.toDegrees(theta));
     }
+
+    /**
+     * Returns the destination point having travelled along a rhumb line from ‘this’ point the given distance on the given bearing
+     * @param distance Distance travelled, in same units as earth radius (default: metres)
+     * @param bearing Bearing in degrees from north
+     * @param radius (Mean) radius of earth (defaults to radius in metres)
+     * @return Destination point
+     */
+    public SphericalPoint rhumbDestinationPoint(final double distance, final double bearing, final double radius) {
+        double sigma = distance / radius; // angular distance in radians
+        double phi1 = this.getLatitude().getRadians();
+        double lambda1 = this.getLongitude().getRadians();
+        double theta = Coordinate.toRadians(bearing);
+
+        double deltaPhi = sigma * Math.cos(theta);
+        double phi2 = phi1 + deltaPhi;
+
+        if (Math.abs(phi2) > GeodesyUtil.getHalfPi())
+            phi2 = phi2 > 0 ? Math.PI - phi2 : -Math.PI - phi2;
+
+        double deltaPsi = Math.log(Math.tan(phi2 / 2.0 + GeodesyUtil.getQuarterPi()) / Math.tan(phi1 / 2.0 + GeodesyUtil.getQuarterPi()));
+        // E-W course becomes ill-conditioned with 0/0
+        double q = Math.abs(deltaPsi) > 10e-12 ? deltaPhi / deltaPsi : Math.cos(phi1);
+        double deltaLambda = sigma * Math.sin(theta) / q;
+        double lambda2 = lambda1 + deltaLambda;
+
+        double lat = Coordinate.toDegrees(phi2);
+        double lon = Coordinate.toDegrees(lambda2);
+
+        return new SphericalPoint(new Latitude(lat), new Longitude(lon)); // normalise to -180..+180
+    }
+
+    /**
+     * Returns the loxodromic midpoint (along a rhumb line) between ‘this’ point and second point
+     * @param secondPoint Latitude/longitude of second point
+     * @return Midpoint between this point and second point
+     */
+    public SphericalPoint rhumbMidpointTo(SphericalPoint secondPoint) {
+        // see mathforum.org/kb/message.jspa?messageID=148837
+        double phi1 = this.getLatitude().getRadians();
+        double lambda1 = this.getLongitude().getRadians();
+        double phi2 = secondPoint.getLatitude().getRadians();
+        double lambda2 = secondPoint.getLongitude().getRadians();
+
+        if (Math.abs(lambda2 - lambda1) > Math.PI)
+            lambda1 += GeodesyUtil.getPiTimes2(); // crossing anti-meridian
+
+        double phi3 = (phi1 + phi2) / 2;
+        double f1 = Math.tan(GeodesyUtil.getQuarterPi() + phi1 / 2.0);
+        double f2 = Math.tan(GeodesyUtil.getQuarterPi() + phi2 / 2.0);
+        double f3 = Math.tan(GeodesyUtil.getQuarterPi() + phi3 / 2.0);
+        double lambda3 = ((lambda2 - lambda1) * Math.log(f3) + lambda1 * Math.log(f2) - lambda2 * Math.log(f1)) / Math.log(f2 / f1);
+
+        if (!Double.isFinite(lambda3))
+            lambda3 = (lambda1 + lambda2) / 2.0; // parallel of latitude
+
+        double lat = Coordinate.toDegrees(phi3);
+        double lon = Coordinate.toDegrees(lambda3);
+
+        return new SphericalPoint(new Latitude(lat), new Longitude(lon)); // normalise to -180..+180
+    }
 }
