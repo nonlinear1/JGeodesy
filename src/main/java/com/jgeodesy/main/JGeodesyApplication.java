@@ -82,5 +82,15 @@ public class JGeodesyApplication {
         // 116.7°
         double bearing = sphericalPoint9.rhumbBearingTo(sphericalPoint10);
         System.out.println(bearing);
+
+        // 50.9642°N, 001.8530°E
+        SphericalPoint rhumbDestinationPoint = sphericalPoint9.rhumbDestinationPoint(40300, 116.7, GeodesyUtil.getRadiusOfWorld());
+        System.out.println(rhumbDestinationPoint.getLatitude().getDegrees());
+        System.out.println(rhumbDestinationPoint.getLongitude().getDegrees());
+
+        // 51.0455°N, 001.5957°E
+        SphericalPoint rhumbMidpoint = sphericalPoint9.rhumbMidpointTo(sphericalPoint10);
+        System.out.println(rhumbMidpoint.getLatitude().getDegrees());
+        System.out.println(rhumbMidpoint.getLongitude().getDegrees());
     }
 }
