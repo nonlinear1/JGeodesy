@@ -5,6 +5,9 @@ import com.jgeodesy.coordinate.Latitude;
 import com.jgeodesy.coordinate.Longitude;
 import com.jgeodesy.util.GeodesyUtil;
 
+import java.util.List;
+import java.util.Vector;
+
 /**
  * Created by omeruluoglu on 24.10.2019.
  */
@@ -409,5 +412,58 @@ public class SphericalPoint extends Point {
         double lon = Coordinate.toDegrees(lambda3);
 
         return new SphericalPoint(new Latitude(lat), new Longitude(lon)); // normalise to -180..+180
+    }
+
+    /**
+     * Calculates the area of a spherical polygon where the sides of the polygon are great circle arcs joining the vertices
+     * @param polygon Array of points defining vertices of the polygon
+     * @param radius (Mean) radius of earth (defaults to radius in metres)
+     * @return The area of the polygon in the same units as radius
+     */
+    public static double areaOf(final List<SphericalPoint> polygon, double radius) {
+        // Uses method due to Karney: osgeo-org.1560.x6.nabble.com/Area-of-a-spherical-polygon-td3841625.html;
+        // For each edge of the polygon, tan(E/2) = tan(Δλ/2)·(tan(φ₁/2)+tan(φ₂/2)) / (1+tan(φ₁/2)·tan(φ₂/2))
+        // where E is the spherical excess of the trapezium obtained by extending the edge to the equator
+
+        if (polygon.size() < 3)
+            return 0.0;
+
+        // Close polygon so that last point equals first point
+        boolean closed = polygon.get(0) == polygon.get(polygon.size() - 1);
+        if (!closed)
+            polygon.add(polygon.get(0));
+
+        double s = 0.0; // spherical excess in steradians
+        for (int v = 0; v < polygon.size() - 1; v++) {
+            double phi1 = polygon.get(v).getLatitude().getRadians();
+            double phi2 = polygon.get(v + 1).getLatitude().getRadians();
+            double deltaLambda = polygon.get(v + 1).getLongitude().getRadians() - polygon.get(v).getLongitude().getRadians();
+            double e = 2.0 * Math.atan2(Math.tan(deltaLambda / 2.0) * (Math.tan(phi1 / 2.0) + Math.tan(phi2 / 2.0)),
+            1.0 + Math.tan(phi1 / 2.0) * Math.tan(phi2 / 2.0));
+            s += e;
+        }
+
+        // Whether polygon encloses pole: sum of course deltas around pole is 0° rather than
+        // normal ±360°: blog.element84.com/determining-if-a-spherical-polygon-contains-a-pole.html
+        // TODO: any better test than this?
+        double sigmaDelta = 0.0;
+        double previousBearing = polygon.get(0).initialBearingTo(polygon.get(1));
+        for (int v = 0; v < polygon.size() - 1; v++) {
+            double initBearing = polygon.get(v).initialBearingTo(polygon.get(v + 1));
+            double finalBearing = polygon.get(v).finalBearingTo(polygon.get(v + 1));
+            // TODO check wrapTo180 method
+            sigmaDelta += GeodesyUtil.wrapTo180(initBearing - previousBearing);
+            sigmaDelta += GeodesyUtil.wrapTo180(finalBearing - initBearing);
+            previousBearing = finalBearing;
+        }
+
+        double initBearing = polygon.get(0).initialBearingTo(polygon.get(1));
+        // TODO check wrapTo180 method
+        sigmaDelta += GeodesyUtil.wrapTo180(initBearing - previousBearing);
+
+        // TODO: fix (intermittent) edge crossing pole - eg (85,90), (85,0), (85,-90)
+        if (Math.abs(sigmaDelta) < 90.0) // 0°-ish
+            s = Math.abs(s) - GeodesyUtil.getPiTimes2();
+        return Math.abs(s * radius * radius); // area in units of radius
     }
 }
