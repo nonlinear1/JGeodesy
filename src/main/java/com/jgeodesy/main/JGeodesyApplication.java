@@ -5,6 +5,10 @@ import com.jgeodesy.coordinate.Latitude;
 import com.jgeodesy.coordinate.Longitude;
 import com.jgeodesy.util.GeodesyUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+
 /**
  * Created by omeruluoglu on 25.10.2019.
  */
@@ -92,5 +96,13 @@ public class JGeodesyApplication {
         SphericalPoint rhumbMidpoint = sphericalPoint9.rhumbMidpointTo(sphericalPoint10);
         System.out.println(rhumbMidpoint.getLatitude().getDegrees());
         System.out.println(rhumbMidpoint.getLongitude().getDegrees());
+
+        // 6.18e9 m²
+        List<SphericalPoint> polygon = new ArrayList<>();
+        polygon.add(new SphericalPoint(new Latitude(0.0), new Longitude(0.0)));
+        polygon.add(new SphericalPoint(new Latitude(1.0), new Longitude(0.0)));
+        polygon.add(new SphericalPoint(new Latitude(0.0), new Longitude(1.0)));
+        double area = SphericalPoint.areaOf(polygon, GeodesyUtil.getRadiusOfWorld());
+        System.out.println(area);
     }
 }
