@@ -7,6 +7,7 @@ import com.jgeodesy.util.GeodesyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -104,5 +105,12 @@ public class JGeodesyApplication {
         polygon.add(new SphericalPoint(new Latitude(0.0), new Longitude(1.0)));
         double area = SphericalPoint.areaOf(polygon, GeodesyUtil.getRadiusOfWorld());
         System.out.println(area);
+
+        Map<String, Double> parallels = SphericalPoint.crossingParallels(new SphericalPoint(new Latitude(0.0), new Longitude(0.0)),
+                new SphericalPoint(new Latitude(60.0), new Longitude(30.0)), 30);
+        // 30°00′00″N, 009°35′39″E
+        System.out.println(parallels.get("lon1"));
+        // 30°00′00″N, 170°24′21″E
+        System.out.println(parallels.get("lon2"));
     }
 }
