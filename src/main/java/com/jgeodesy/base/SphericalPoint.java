@@ -4,8 +4,11 @@ import com.jgeodesy.coordinate.Coordinate;
 import com.jgeodesy.coordinate.Latitude;
 import com.jgeodesy.coordinate.Longitude;
 import com.jgeodesy.util.GeodesyUtil;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -465,5 +468,54 @@ public class SphericalPoint extends Point {
         if (Math.abs(sigmaDelta) < 90.0) // 0°-ish
             s = Math.abs(s) - GeodesyUtil.getPiTimes2();
         return Math.abs(s * radius * radius); // area in units of radius
+    }
+
+    /**
+     * Returns the pair of meridians at which a great circle defined by two points crosses the given latitude.
+     * If the great circle doesn't reach the given latitude, null is returned.
+     * @param firstPoint First point defining great circle
+     * @param secondPoint Second point defining great circle
+     * @param latitude Latitude crossings are to be determined for
+     * @return Object containing { lon1, lon2 } or null if given latitude not reached
+     */
+    public static Map<String, Double> crossingParallels(final SphericalPoint firstPoint, final SphericalPoint secondPoint, final double latitude) {
+        if (firstPoint.equals(secondPoint))
+            return null; // coincident points
+
+        double phi = Coordinate.toRadians(latitude);
+
+        double phi1 = firstPoint.getLatitude().getRadians();
+        double lambda1 = firstPoint.getLongitude().getRadians();
+        double phi2 = secondPoint.getLatitude().getRadians();
+        double lambda2 = secondPoint.getLongitude().getRadians();
+
+        double deltaLambda = lambda2 - lambda1;
+
+        double x = Math.sin(phi1) * Math.cos(phi2) * Math.cos(phi) * Math.sin(deltaLambda);
+        double y = Math.sin(phi1) * Math.cos(phi2) * Math.cos(phi) * Math.cos(deltaLambda) - Math.cos(phi1) * Math.sin(phi2) * Math.cos(phi);
+        double z = Math.cos(phi1) * Math.cos(phi2) * Math.sin(phi) * Math.sin(deltaLambda);
+
+        if (z * z > x * x + y * y)
+            return null; // great circle doesn't reach latitude
+
+        double deltaM = Math.atan2(-y, x); // longitude at max latitude
+        double deltaLambdaI = Math.acos(z / Math.sqrt(x*x + y*y)); // Δλ from λm to intersection points
+
+        double lambdaI1 = lambda1 + deltaM - deltaLambdaI;
+        double lambdaI2 = lambda1 + deltaM + deltaLambdaI;
+
+        double lon1 = Coordinate.toDegrees(lambdaI1);
+        double lon2 = Coordinate.toDegrees(lambdaI2);
+
+        Map<String, Double> crossMap = new HashMap<>();
+        crossMap.put("lon1", GeodesyUtil.wrapTo180(lon1));
+        crossMap.put("lon2", GeodesyUtil.wrapTo180(lon2));
+        return crossMap;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .toString();
     }
 }
