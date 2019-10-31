@@ -108,8 +108,8 @@ public class SphericalPoint extends Point {
         double cY = aY + bY;
         double cZ = aZ + bZ;
 
-        double phi3 = Math.atan2(cZ, Math.sqrt(cX * cX + cY * cY));
-        double lambda3 = lambda1 + Math.atan2(cY, cY);
+        double phi3 = Math.atan2(cZ, Math.sqrt(cX * cX + bY * bY));
+        double lambda3 = lambda1 + Math.atan2(bY, cX);
 
         double lat = Coordinate.toDegrees(phi3);
         double lon = Coordinate.toDegrees(lambda3);
