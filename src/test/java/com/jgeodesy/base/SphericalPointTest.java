@@ -175,7 +175,7 @@ public class SphericalPointTest extends AbstractUnitTest implements BaseUnitTest
     @Test
     public void test_areaOf() {
         List<SphericalPoint> polygon = new ArrayList<>();
-        polygon.add(new SphericalPoint(new Latitude(0.0), new Longitude(0.0)));
+        polygon.add(new SphericalPoint());
         polygon.add(new SphericalPoint(new Latitude(1.0), new Longitude(0.0)));
         polygon.add(new SphericalPoint(new Latitude(0.0), new Longitude(1.0)));
         double area = SphericalPoint.areaOf(polygon, GeodesyUtil.getRadiusOfWorld());
@@ -184,7 +184,7 @@ public class SphericalPointTest extends AbstractUnitTest implements BaseUnitTest
 
     @Test
     public void test_crossingParallels() {
-        Map<String, Double> parallels = SphericalPoint.crossingParallels(new SphericalPoint(new Latitude(0.0), new Longitude(0.0)),
+        Map<String, Double> parallels = SphericalPoint.crossingParallels(new SphericalPoint(),
                 new SphericalPoint(new Latitude(60.0), new Longitude(30.0)), 30);
         String lon1 = decimalFormatter2.format(parallels.get("lon1"));
         // TODO check the method
